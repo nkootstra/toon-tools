@@ -1,0 +1,48 @@
+{
+  "name": "@toon-tools/elysia",
+  "version": "0.1.0",
+  "description": "Elysia plugin for TOON content negotiation",
+  "keywords": [
+    "content-negotiation",
+    "elysia",
+    "llm",
+    "plugin",
+    "toon"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@toon-tools/core": "workspace:*"
+  },
+  "devDependencies": {
+    "elysia": "^1.4.27",
+    "tsup": "^8.5.1",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "elysia": "^1.0.0"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@toon-tools/fetch",
+  "version": "0.1.0",
+  "description": "Framework-agnostic TOON fetch wrapper for TanStack Query, SWR, and standalone use",
+  "keywords": [
+    "content-negotiation",
+    "fetch",
+    "llm",
+    "swr",
+    "tanstack-query",
+    "toon"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@toon-format/toon": "^2.1.0",
+    "@toon-tools/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "vitest": "^4.1.0"
+  }
+}
