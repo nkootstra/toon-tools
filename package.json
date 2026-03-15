@@ -10,10 +10,15 @@
     "format:check": "oxfmt --check"
   },
   "devDependencies": {
+    "@effect/vitest": "^0.27.0",
+    "@toon-format/toon": "^2.1.0",
+    "effect": "^3.19.19",
+    "hono": "^4.12.8",
     "oxfmt": "^0.40.0",
     "oxlint": "^1.55.0",
     "turbo": "^2.8.17",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
   },
   "packageManager": "pnpm@10.18.3",
   "pnpm": {

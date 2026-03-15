@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createElement, type ReactNode } from 'react'
 import { encode } from '@toon-format/toon'
-import { ToonProvider, useToonQuery, useToonContext } from '../src/index.js'
+import { ToonProvider, useToonQuery, useToonQueryEffect, useToonContext } from '../src/index.js'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -144,6 +144,49 @@ describe('useToonQuery', () => {
       () =>
         useToonQuery<{ name: string }>({
           queryKey: ['user'],
+          url: '/user',
+        }),
+      { wrapper },
+    )
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data).toEqual({ name: 'Bob' })
+  })
+})
+
+describe('useToonQueryEffect', () => {
+  test('fetches and decodes TOON data with typed errors', async () => {
+    const toonBody = encode([{ id: 1, name: 'Alice' }])
+    stubFetch(toonBody, 'text/toon; charset=utf-8')
+
+    const { result } = renderHook(
+      () =>
+        useToonQueryEffect<Array<{ id: number; name: string }>>({
+          queryKey: ['users-effect'],
+          url: '/api/users',
+        }),
+      { wrapper: createWrapper() },
+    )
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data).toEqual([{ id: 1, name: 'Alice' }])
+  })
+
+  test('works without ToonProvider', async () => {
+    const toonBody = encode({ name: 'Bob' })
+    stubFetch(toonBody, 'text/toon; charset=utf-8')
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client: queryClient }, children)
+
+    const { result } = renderHook(
+      () =>
+        useToonQueryEffect<{ name: string }>({
+          queryKey: ['user-effect'],
           url: '/user',
         }),
       { wrapper },

@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { acceptsToon, encodeToon, TOON_CHARSET, type ToonEncodeOptions } from '@toon-tools/core'
+import { acceptsToon, encodeToonSync, TOON_CHARSET, type ToonEncodeOptions } from '@toon-tools/core'
 
 export type { ToonEncodeOptions as ToonOptions } from '@toon-tools/core'
 
@@ -16,7 +16,7 @@ export function toon(options?: ToonEncodeOptions) {
       )
         return
 
-      const toonBody = encodeToon(responseValue, options)
+      const toonBody = encodeToonSync(responseValue, options)
       return new Response(toonBody, {
         headers: { 'Content-Type': TOON_CHARSET },
       })

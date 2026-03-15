@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from 'hono'
-import { acceptsToon, encodeToon, TOON_CHARSET, type ToonEncodeOptions } from '@toon-tools/core'
+import { acceptsToon, encodeToonSync, TOON_CHARSET, type ToonEncodeOptions } from '@toon-tools/core'
 
 export type { ToonEncodeOptions as ToonOptions } from '@toon-tools/core'
 
@@ -13,7 +13,7 @@ export function toon(options?: ToonEncodeOptions): MiddlewareHandler {
     if (!contentType?.includes('application/json')) return
 
     const json = await c.res.json()
-    const toonBody = encodeToon(json, options)
+    const toonBody = encodeToonSync(json, options)
 
     c.res = new Response(toonBody, {
       status: c.res.status,

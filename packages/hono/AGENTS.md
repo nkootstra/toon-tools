@@ -9,7 +9,9 @@ The `toon()` middleware runs after `await next()`. It checks:
 1. Does the Accept header include `text/toon` with q > 0? (via `acceptsToon` from core)
 2. Is the response Content-Type `application/json`?
 
-If both: reads the JSON body, encodes it as TOON via `encodeToon`, replaces `c.res` with a new Response.
+If both: reads the JSON body, encodes it as TOON via `encodeToonSync`, replaces `c.res` with a new Response.
+
+This package does NOT depend on Effect — it uses the synchronous functions from core.
 
 ## Testing
 

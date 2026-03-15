@@ -1,4 +1,6 @@
+import { Effect } from 'effect'
 import { encode, type EncodeOptions } from '@toon-format/toon'
+import { ToonEncodeError } from './errors.js'
 
 export interface ToonEncodeOptions {
   delimiter?: EncodeOptions['delimiter']
@@ -6,10 +8,22 @@ export interface ToonEncodeOptions {
 }
 
 /**
- * Encodes a JSON-serializable value to TOON format.
- * Thin wrapper around `@toon-format/toon`'s `encode` that accepts
- * the subset of options relevant to server-side encoding.
+ * Encodes a value to TOON format. Returns an Effect that fails
+ * with `ToonEncodeError` if encoding fails.
  */
-export function encodeToon(value: unknown, options?: ToonEncodeOptions): string {
+export const encodeToon = (
+  value: unknown,
+  options?: ToonEncodeOptions,
+): Effect.Effect<string, ToonEncodeError> =>
+  Effect.try({
+    try: () => encode(value, options),
+    catch: (cause) => new ToonEncodeError({ cause }),
+  })
+
+/**
+ * Synchronous TOON encoding. Used by server middleware adapters
+ * (Hono, Elysia) where Effect is not needed.
+ */
+export function encodeToonSync(value: unknown, options?: ToonEncodeOptions): string {
   return encode(value, options)
 }

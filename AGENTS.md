@@ -4,7 +4,7 @@ Turborepo monorepo providing TOON content negotiation for server frameworks (Hon
 
 ## Stack
 
-TypeScript. pnpm workspaces. Turborepo for task orchestration. tsup for building (ESM + CJS dual output). Vitest for testing. oxlint for linting. oxfmt for formatting.
+TypeScript. Effect for typed errors and composable pipelines. pnpm workspaces. Turborepo for task orchestration. tsup for building (ESM + CJS dual output). Vitest + @effect/vitest for testing. oxlint for linting. oxfmt for formatting.
 
 ## Dependency graph
 
@@ -22,6 +22,13 @@ TypeScript. pnpm workspaces. Turborepo for task orchestration. tsup for building
 
 All shared logic (content negotiation, encoding, constants) lives in `@toon-tools/core`. Server packages (hono, elysia) and fetch depend on core. React depends on fetch.
 
+## Effect conventions
+
+- Core, fetch, and react packages use Effect. Hono and elysia do NOT depend on Effect — they use synchronous functions from core.
+- Every package exposes dual APIs: Effect-native (`encodeToon`, `toonFetchEffect`, `useToonQueryEffect`) and Promise-based wrappers (`encodeToonSync`, `toonFetch`, `useToonQuery`).
+- Errors are tagged with `Data.TaggedError`: `ToonEncodeError`, `ToonDecodeError`, `ToonFetchError`. Use `Effect.catchTag` or `Effect.flip` in tests.
+- Use `@effect/vitest` for Effect tests: `it.effect()` runs Effect programs, `Effect.flip` captures errors. Never use `Effect.runPromiseExit` with conditional expects.
+
 ## Conventions
 
 - Media type is `text/toon` (provisional, per TOON SPEC §18.2). Content-Type for responses: `text/toon; charset=utf-8`.
@@ -30,6 +37,7 @@ All shared logic (content negotiation, encoding, constants) lives in `@toon-tool
 - Server middleware only converts `application/json` responses. Non-JSON (HTML, text, 204) passes through unchanged.
 - Only objects and arrays are TOON-encoded. Primitive JSON responses pass through as JSON.
 - `toonFetch` returns `Promise<T>` — designed to work as a TanStack Query `queryFn`, SWR `fetcher`, or standalone. No custom caching.
+- `toonFetchEffect` returns `Effect<T, ToonFetchError | ToonDecodeError>` for Effect-native consumers.
 
 ## Testing
 

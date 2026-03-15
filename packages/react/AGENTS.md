@@ -4,8 +4,10 @@ React hooks for TOON data fetching, built on TanStack Query and `@toon-tools/fet
 
 ## Design decisions
 
+- Dual API: `useToonQueryEffect` (Effect-native, typed errors) and `useToonQuery` (Promise-based, unchanged API).
 - `useToonQuery` is a thin wrapper around `useQuery` that injects `toonFetch` as the `queryFn`. All `UseQueryOptions` except `queryFn` are passed through.
-- `ToonProvider` is optional. Without it, `useToonQuery` uses `toonFetch` directly. With it, it creates a configured `createToonFetch` instance with the provider's `baseUrl`/`headers`.
+- `useToonQueryEffect` injects `toonFetchEffect` and runs it via `Effect.runPromise`. Error type is `ToonFetchError | ToonDecodeError`.
+- `ToonProvider` is optional. Without it, both hooks use the default `toonFetch`/`toonFetchEffect`. With it, they create configured instances with the provider's `baseUrl`/`headers`.
 - The recommended path for most users is `toonFetch` directly as a `queryFn` — `@toon-tools/react` is convenience, not a requirement.
 
 ## Testing

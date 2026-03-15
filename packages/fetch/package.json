@@ -37,9 +37,11 @@
   },
   "dependencies": {
     "@toon-format/toon": "^2.1.0",
-    "@toon-tools/core": "workspace:*"
+    "@toon-tools/core": "workspace:*",
+    "effect": "^3.19.19"
   },
   "devDependencies": {
+    "@effect/vitest": "^0.27.0",
     "tsup": "^8.5.1",
     "vitest": "^4.1.0"
   }

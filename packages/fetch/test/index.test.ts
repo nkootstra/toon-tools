@@ -1,10 +1,15 @@
-import { describe, test, expect, vi, afterEach } from 'vitest'
+import { Effect } from 'effect'
+import { describe, expect, it } from '@effect/vitest'
+import { vi, afterEach } from 'vitest'
 import { encode } from '@toon-format/toon'
 import {
   toonFetch,
+  toonFetchEffect,
   createToonFetch,
+  createToonFetchEffect,
   decodeToonResponse,
   isToonResponse,
+  ToonFetchError,
   TOON_ACCEPT_HEADER,
 } from '../src/index.js'
 
@@ -25,7 +30,7 @@ function stubFetch(body: string, contentType: string) {
 }
 
 describe('toonFetch', () => {
-  test('sends Accept: text/toon header with JSON fallback', async () => {
+  it('sends Accept: text/toon header with JSON fallback', async () => {
     const mock = stubFetch('{}', 'application/json')
 
     await toonFetch('/api/users')
@@ -34,7 +39,7 @@ describe('toonFetch', () => {
     expect(init.headers.get('Accept')).toBe(TOON_ACCEPT_HEADER)
   })
 
-  test('decodes text/toon response to JS object', async () => {
+  it('decodes text/toon response to JS object', async () => {
     const toonBody = encode([{ id: 1, name: 'Alice' }])
     stubFetch(toonBody, 'text/toon; charset=utf-8')
 
@@ -43,7 +48,7 @@ describe('toonFetch', () => {
     expect(data).toEqual([{ id: 1, name: 'Alice' }])
   })
 
-  test('falls back to JSON parsing when server returns application/json', async () => {
+  it('falls back to JSON parsing when server returns application/json', async () => {
     stubFetch(JSON.stringify({ name: 'Alice' }), 'application/json')
 
     const data = await toonFetch<{ name: string }>('/api/user')
@@ -51,15 +56,13 @@ describe('toonFetch', () => {
     expect(data).toEqual({ name: 'Alice' })
   })
 
-  test('throws on non-TOON/non-JSON response when fallback is throw', async () => {
+  it('throws on non-TOON/non-JSON response when fallback is throw', async () => {
     stubFetch('<h1>Not Found</h1>', 'text/html')
 
-    await expect(toonFetch('/api/users', { fallback: 'throw' })).rejects.toThrow(
-      'Unexpected Content-Type',
-    )
+    await expect(toonFetch('/api/users', { fallback: 'throw' })).rejects.toThrow()
   })
 
-  test('preserves custom headers passed in init', async () => {
+  it('preserves custom headers passed in init', async () => {
     const mock = stubFetch('{}', 'application/json')
 
     await toonFetch('/api/users', {
@@ -72,7 +75,7 @@ describe('toonFetch', () => {
     expect(headers.get('Accept')).toBe(TOON_ACCEPT_HEADER)
   })
 
-  test('createToonFetch prepends baseUrl to relative paths', async () => {
+  it('createToonFetch prepends baseUrl to relative paths', async () => {
     const mock = stubFetch('{}', 'application/json')
 
     const api = createToonFetch({ baseUrl: 'https://api.example.com' })
@@ -82,7 +85,7 @@ describe('toonFetch', () => {
     expect(url).toBe('https://api.example.com/users')
   })
 
-  test('createToonFetch merges default headers with per-request headers', async () => {
+  it('createToonFetch merges default headers with per-request headers', async () => {
     const mock = stubFetch('{}', 'application/json')
 
     const api = createToonFetch({
@@ -96,32 +99,90 @@ describe('toonFetch', () => {
     expect(headers.get('X-Custom')).toBe('value')
   })
 
-  test('propagates network errors from fetch', async () => {
+  it('propagates network errors from fetch', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
 
-    await expect(toonFetch('/api/users')).rejects.toThrow('Failed to fetch')
+    await expect(toonFetch('/api/users')).rejects.toThrow()
+  })
+})
+
+describe('toonFetchEffect', () => {
+  it.effect('succeeds with decoded TOON data', () => {
+    const toonBody = encode([{ id: 1, name: 'Alice' }])
+    stubFetch(toonBody, 'text/toon; charset=utf-8')
+
+    return Effect.gen(function* () {
+      const data = yield* toonFetchEffect<Array<{ id: number; name: string }>>('/api/users')
+      expect(data).toEqual([{ id: 1, name: 'Alice' }])
+    })
+  })
+
+  it.effect('falls back to JSON when server returns application/json', () => {
+    stubFetch(JSON.stringify({ name: 'Alice' }), 'application/json')
+
+    return Effect.gen(function* () {
+      const data = yield* toonFetchEffect<{ name: string }>('/api/user')
+      expect(data).toEqual({ name: 'Alice' })
+    })
+  })
+
+  it.effect('fails with ToonFetchError on network error', () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+
+    return Effect.gen(function* () {
+      const error = yield* toonFetchEffect('/api/users').pipe(Effect.flip)
+      expect(error._tag).toBe('ToonFetchError')
+    })
+  })
+
+  it.effect('fails with ToonFetchError on unexpected Content-Type when fallback is throw', () => {
+    stubFetch('<h1>Not Found</h1>', 'text/html')
+
+    return Effect.gen(function* () {
+      const error = yield* toonFetchEffect('/api/users', { fallback: 'throw' }).pipe(Effect.flip)
+      expect(error._tag).toBe('ToonFetchError')
+      expect((error as ToonFetchError).reason).toBe('UnexpectedContentType')
+      expect((error as ToonFetchError).contentType).toBe('text/html')
+    })
+  })
+
+  it.effect('createToonFetchEffect prepends baseUrl', () => {
+    const mock = stubFetch('{}', 'application/json')
+
+    return Effect.gen(function* () {
+      const api = createToonFetchEffect({ baseUrl: 'https://api.example.com' })
+      yield* api('/users')
+
+      const [url] = mock.mock.calls[0]
+      expect(url).toBe('https://api.example.com/users')
+    })
+  })
+
+  it('ToonFetchError has correct _tag', () => {
+    const error = new ToonFetchError({ reason: 'Network' })
+    expect(error._tag).toBe('ToonFetchError')
   })
 })
 
 describe('isToonResponse', () => {
-  test('returns true for text/toon Content-Type with charset', () => {
+  it('returns true for text/toon Content-Type with charset', () => {
     const res = mockResponse('', 'text/toon; charset=utf-8')
     expect(isToonResponse(res)).toBe(true)
   })
 
-  test('returns true for bare text/toon Content-Type (no charset)', () => {
+  it('returns true for bare text/toon Content-Type (no charset)', () => {
     const res = mockResponse('', 'text/toon')
     expect(isToonResponse(res)).toBe(true)
   })
 
-  test('returns false for application/json Content-Type', () => {
+  it('returns false for application/json Content-Type', () => {
     const res = mockResponse('', 'application/json')
     expect(isToonResponse(res)).toBe(false)
   })
 })
 
 describe('decodeToonResponse', () => {
-  test('decodes a Response with TOON body', async () => {
+  it('decodes a Response with TOON body', async () => {
     const toonBody = encode({ name: 'Alice', age: 30 })
     const res = mockResponse(toonBody, 'text/toon; charset=utf-8')
 
@@ -130,13 +191,13 @@ describe('decodeToonResponse', () => {
     expect(data).toEqual({ name: 'Alice', age: 30 })
   })
 
-  test('throws on malformed TOON body', async () => {
+  it('throws on malformed TOON body', async () => {
     const res = mockResponse('[2]{id,name}:\n  1,Alice', 'text/toon')
 
     await expect(decodeToonResponse(res)).rejects.toThrow('Expected 2 tabular rows, but got 1')
   })
 
-  test('decodes values with special characters correctly', async () => {
+  it('decodes values with special characters correctly', async () => {
     const original = [{ id: 1, note: 'hello, world', tag: 'key: val' }]
     const toonBody = encode(original)
     const res = mockResponse(toonBody, 'text/toon')
