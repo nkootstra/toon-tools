@@ -53,6 +53,10 @@ Mock only at system boundaries. Never mock `@toon-tools/core` internals from ser
 
 When fixing bugs, write a failing test first that reproduces the bug, then fix it.
 
+## Releasing
+
+All packages share one version. Release via `VERSION=X.Y.Z pnpm run version:set`, commit, tag `vX.Y.Z`, push. The publish workflow verifies versions match the tag before publishing. Never publish manually — always use the tag-triggered workflow.
+
 ## Sub-areas
 
 - `packages/core/AGENTS.md` — shared negotiation, encoding, constants

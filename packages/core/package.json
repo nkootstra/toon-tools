@@ -8,6 +8,11 @@
     "toon"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nkootstra/toon-tools.git",
+    "directory": "packages/core"
+  },
   "files": [
     "dist"
   ],

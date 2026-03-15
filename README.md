@@ -463,6 +463,48 @@ pnpm run format:check # Check formatting with oxfmt
 pnpm run format       # Apply formatting with oxfmt
 ```
 
+## Releasing
+
+All packages share the same version. A git tag triggers automated publishing to npm.
+
+### 1. Set the version
+
+```sh
+VERSION=0.2.0 pnpm run version:set
+```
+
+This updates every `packages/*/package.json` to the same version.
+
+### 2. Commit and tag
+
+```sh
+git add -A
+git commit -m "release: v0.2.0"
+git tag v0.2.0
+git push && git push --tags
+```
+
+### 3. Automated publish
+
+Pushing the tag triggers the [publish workflow](.github/workflows/publish.yml), which:
+
+1. Runs lint, format check, build, and all tests
+2. Verifies every package version matches the tag
+3. Publishes all packages to npm with provenance
+
+### Setup (one-time)
+
+1. Create the `@toon-tools` org on [npmjs.com](https://www.npmjs.com)
+2. Generate an **Automation** token at npmjs.com > Access Tokens
+3. Add it as `NPM_TOKEN` in GitHub repo Settings > Secrets > Actions
+
+### How versioning works
+
+- `workspace:^` dependencies are resolved by pnpm during publish (e.g., `"@toon-tools/core": "workspace:^"` becomes `"@toon-tools/core": "^0.2.0"`)
+- All packages are always the same version
+- The publish workflow verifies versions match the tag before publishing
+- Provenance is enabled — published packages link to the exact GitHub commit
+
 ## License
 
 MIT

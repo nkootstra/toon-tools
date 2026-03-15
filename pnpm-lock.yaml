@@ -100,7 +100,7 @@ importers:
   packages/elysia:
     dependencies:
       '@toon-tools/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       elysia:
@@ -116,7 +116,7 @@ importers:
   packages/fetch:
     dependencies:
       '@toon-tools/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
       effect:
         specifier: ^3.19.19
@@ -135,7 +135,7 @@ importers:
   packages/hono:
     dependencies:
       '@toon-tools/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@toon-format/toon':
@@ -154,7 +154,7 @@ importers:
   packages/react:
     dependencies:
       '@toon-tools/fetch':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../fetch
       effect:
         specifier: ^3.19.19

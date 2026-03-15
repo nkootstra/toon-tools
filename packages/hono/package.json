@@ -10,6 +10,11 @@
     "toon"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nkootstra/toon-tools.git",
+    "directory": "packages/hono"
+  },
   "files": [
     "dist"
   ],
@@ -35,7 +40,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@toon-tools/core": "workspace:*"
+    "@toon-tools/core": "workspace:^"
   },
   "devDependencies": {
     "@toon-format/toon": "^2.1.0",

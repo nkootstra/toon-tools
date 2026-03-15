@@ -1,5 +1,9 @@
 {
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nkootstra/toon-tools.git"
+  },
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
@@ -8,7 +12,8 @@
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "test:integration": "vitest run tests/integration"
+    "test:integration": "vitest run tests/integration",
+    "version:set": "pnpm -r exec npm pkg set version=$VERSION"
   },
   "devDependencies": {
     "@effect/vitest": "^0.27.0",
