@@ -9,10 +9,9 @@ import {
   type ToonFetchInit,
   type ToonFetchError,
 } from '@toon-tools/fetch'
-import type { ToonDecodeError } from '@toon-tools/core'
+import type { ToonDecodeError } from '@toon-tools/fetch'
 
-export type { ToonFetchError } from '@toon-tools/fetch'
-export type { ToonDecodeError } from '@toon-tools/core'
+export type { ToonFetchError, ToonDecodeError } from '@toon-tools/fetch'
 
 // ---------------------------------------------------------------------------
 // Context

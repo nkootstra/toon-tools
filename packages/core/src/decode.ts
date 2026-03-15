@@ -11,3 +11,11 @@ export const decodeToon = <T = unknown>(input: string): Effect.Effect<T, ToonDec
     try: () => decode(input) as T,
     catch: (cause) => new ToonDecodeError({ cause, input }),
   })
+
+/**
+ * Synchronous TOON decoding. Used by Promise-based utilities
+ * where Effect is not needed.
+ */
+export function decodeToonSync<T = unknown>(input: string): T {
+  return decode(input) as T
+}

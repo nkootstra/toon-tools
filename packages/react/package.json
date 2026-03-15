@@ -36,7 +36,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@toon-tools/core": "workspace:*",
     "@toon-tools/fetch": "workspace:*",
     "effect": "^3.19.19"
   },

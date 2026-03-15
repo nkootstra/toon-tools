@@ -1,9 +1,9 @@
 import { Effect, Data } from 'effect'
-import { decode } from '@toon-format/toon'
 import {
   TOON_CONTENT_TYPE,
   TOON_ACCEPT_HEADER,
   decodeToon,
+  decodeToonSync,
   type ToonDecodeError,
 } from '@toon-tools/core'
 
@@ -51,7 +51,7 @@ export function isToonResponse(response: Response): boolean {
  */
 export async function decodeToonResponse<T = unknown>(response: Response): Promise<T> {
   const text = await response.text()
-  return decode(text) as T
+  return decodeToonSync<T>(text)
 }
 
 // ---------------------------------------------------------------------------
