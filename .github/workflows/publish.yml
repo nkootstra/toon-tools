@@ -61,3 +61,5 @@ jobs:
 
       - name: Publish
         run: pnpm -r publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
