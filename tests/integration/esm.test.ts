@@ -17,10 +17,11 @@ import {
   ToonDecodeError,
   TOON_CONTENT_TYPE,
   TOON_ACCEPT_HEADER,
+  TOON_CONTENT_TYPE_HEADER,
   TOON_CHARSET,
 } from '../../packages/core/dist/index.js'
 
-import { toon as honoToon } from '../../packages/hono/dist/index.js'
+import { toon as honoToon, toonJson as honoToonJson } from '../../packages/hono/dist/index.js'
 
 import { toon as elysiaToon } from '../../packages/elysia/dist/index.js'
 
@@ -63,7 +64,8 @@ describe('ESM dist imports: @toon-tools/core', () => {
 
   test('exports all expected constants', () => {
     expect(TOON_CONTENT_TYPE).toBe('text/toon')
-    expect(TOON_CHARSET).toBe('text/toon; charset=utf-8')
+    expect(TOON_CONTENT_TYPE_HEADER).toBe('text/toon; charset=utf-8')
+    expect(TOON_CHARSET).toBe(TOON_CONTENT_TYPE_HEADER)
     expect(TOON_ACCEPT_HEADER).toBe('text/toon, application/json;q=0.9')
   })
 
@@ -91,6 +93,10 @@ describe('ESM dist imports: @toon-tools/hono', () => {
     expect(typeof honoToon).toBe('function')
   })
 
+  test('exports toonJson helper function', () => {
+    expect(typeof honoToonJson).toBe('function')
+  })
+
   test('toon() returns a middleware handler', () => {
     const middleware = honoToon()
     expect(typeof middleware).toBe('function')
@@ -101,6 +107,20 @@ describe('ESM dist imports: @toon-tools/hono', () => {
     const app = new Hono()
     app.use(honoToon())
     app.get('/data', (c: any) => c.json({ ok: true }))
+
+    const res = await app.request('/data', {
+      headers: { Accept: 'text/toon' },
+    })
+
+    expect(res.headers.get('Content-Type')).toBe('text/toon; charset=utf-8')
+    const body = await res.text()
+    expect(body).toContain('ok: true')
+  })
+
+  test('toonJson round-trip (zero-copy path)', async () => {
+    const { Hono } = await import('hono')
+    const app = new Hono()
+    app.get('/data', (c: any) => honoToonJson(c, { ok: true }))
 
     const res = await app.request('/data', {
       headers: { Accept: 'text/toon' },

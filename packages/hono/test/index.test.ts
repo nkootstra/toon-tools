@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { Hono } from 'hono'
 import { decode } from '@toon-format/toon'
-import { toon } from '../src/index.js'
+import { toon, toonJson } from '../src/index.js'
 
 describe('toon middleware', () => {
   test('passes through response when Accept does not include text/toon', async () => {
@@ -222,5 +222,113 @@ describe('toon middleware', () => {
     const body = await res.text()
     const parsed = decode(body)
     expect(parsed).toEqual([{ id: 1, name: 'Alice, Bob', note: 'key: value' }])
+  })
+})
+
+describe('toonJson helper', () => {
+  test('encodes directly to TOON when Accept: text/toon (no round-trip)', async () => {
+    const app = new Hono()
+    app.get('/users', (c) => toonJson(c, [{ id: 1, name: 'Alice' }]))
+
+    const res = await app.request('/users', {
+      headers: { Accept: 'text/toon' },
+    })
+
+    expect(res.headers.get('Content-Type')).toBe('text/toon; charset=utf-8')
+    const body = await res.text()
+    expect(body).toContain('[1]{id,name}')
+    expect(body).toContain('1,Alice')
+  })
+
+  test('falls back to JSON when Accept does not include text/toon', async () => {
+    const app = new Hono()
+    app.get('/users', (c) => toonJson(c, [{ id: 1, name: 'Alice' }]))
+
+    const res = await app.request('/users', {
+      headers: { Accept: 'application/json' },
+    })
+
+    expect(res.headers.get('Content-Type')).toContain('application/json')
+    const body = await res.json()
+    expect(body).toEqual([{ id: 1, name: 'Alice' }])
+  })
+
+  test('preserves custom status code', async () => {
+    const app = new Hono()
+    app.post('/users', (c) => toonJson(c, { id: 1, name: 'Alice' }, { status: 201 }))
+
+    const res = await app.request('/users', {
+      method: 'POST',
+      headers: { Accept: 'text/toon' },
+    })
+
+    expect(res.status).toBe(201)
+    const body = await res.text()
+    expect(body).toContain('id: 1')
+  })
+
+  test('preserves custom status code for JSON fallback', async () => {
+    const app = new Hono()
+    app.post('/users', (c) => toonJson(c, { id: 1, name: 'Alice' }, { status: 201 }))
+
+    const res = await app.request('/users', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+    })
+
+    expect(res.status).toBe(201)
+    const body = await res.json()
+    expect(body).toEqual({ id: 1, name: 'Alice' })
+  })
+
+  test('applies delimiter option', async () => {
+    const app = new Hono()
+    app.get('/users', (c) => toonJson(c, [{ id: 1, name: 'Alice' }], { delimiter: '\t' }))
+
+    const res = await app.request('/users', {
+      headers: { Accept: 'text/toon' },
+    })
+
+    const body = await res.text()
+    expect(body).toContain('1\tAlice')
+  })
+
+  test('applies keyFolding option', async () => {
+    const app = new Hono()
+    app.get('/data', (c) =>
+      toonJson(c, { data: { metadata: { items: ['a', 'b'] } } }, { keyFolding: 'safe' }),
+    )
+
+    const res = await app.request('/data', {
+      headers: { Accept: 'text/toon' },
+    })
+
+    const body = await res.text()
+    expect(body).toContain('data.metadata.items[2]')
+  })
+
+  test('round-trips correctly with special characters', async () => {
+    const app = new Hono()
+    app.get('/data', (c) => toonJson(c, [{ id: 1, name: 'Alice, Bob', note: 'key: value' }]))
+
+    const res = await app.request('/data', {
+      headers: { Accept: 'text/toon' },
+    })
+
+    const body = await res.text()
+    const parsed = decode(body)
+    expect(parsed).toEqual([{ id: 1, name: 'Alice, Bob', note: 'key: value' }])
+  })
+
+  test('does not convert when Accept: text/toon;q=0', async () => {
+    const app = new Hono()
+    app.get('/users', (c) => toonJson(c, [{ id: 1, name: 'Alice' }]))
+
+    const res = await app.request('/users', {
+      headers: { Accept: 'text/toon;q=0, application/json;q=1' },
+    })
+
+    const body = await res.json()
+    expect(body).toEqual([{ id: 1, name: 'Alice' }])
   })
 })

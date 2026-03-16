@@ -2,4 +2,9 @@ export { acceptsToon } from './negotiate.js'
 export { encodeToon, encodeToonSync, type ToonEncodeOptions } from './encode.js'
 export { decodeToon, decodeToonSync } from './decode.js'
 export { ToonEncodeError, ToonDecodeError } from './errors.js'
-export { TOON_CONTENT_TYPE, TOON_ACCEPT_HEADER, TOON_CHARSET } from './constants.js'
+export {
+  TOON_CONTENT_TYPE,
+  TOON_ACCEPT_HEADER,
+  TOON_CONTENT_TYPE_HEADER,
+  TOON_CHARSET,
+} from './constants.js'

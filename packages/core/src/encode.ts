@@ -21,8 +21,8 @@ export const encodeToon = (
   })
 
 /**
- * Synchronous TOON encoding. Used by server middleware adapters
- * (Hono, Elysia) where Effect is not needed.
+ * Synchronous TOON encoding for non-Effect consumers.
+ * Used by server middleware (Hono, Elysia) and Promise-based wrappers.
  */
 export function encodeToonSync(value: unknown, options?: ToonEncodeOptions): string {
   return encode(value, options)

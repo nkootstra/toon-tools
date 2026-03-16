@@ -13,8 +13,8 @@ export const decodeToon = <T = unknown>(input: string): Effect.Effect<T, ToonDec
   })
 
 /**
- * Synchronous TOON decoding. Used by Promise-based utilities
- * where Effect is not needed.
+ * Synchronous TOON decoding for non-Effect consumers.
+ * Used by Promise-based wrappers like `decodeToonResponse`.
  */
 export function decodeToonSync<T = unknown>(input: string): T {
   return decode(input) as T

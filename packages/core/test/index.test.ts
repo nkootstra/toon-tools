@@ -9,6 +9,7 @@ import {
   ToonDecodeError,
   TOON_CONTENT_TYPE,
   TOON_ACCEPT_HEADER,
+  TOON_CONTENT_TYPE_HEADER,
   TOON_CHARSET,
 } from '../src/index.js'
 import { decode } from '@toon-format/toon'
@@ -45,6 +46,10 @@ describe('acceptsToon', () => {
 
   it('returns false for Accept: application/json', () => {
     expect(acceptsToon('application/json')).toBe(false)
+  })
+
+  it('returns false for superstring media types like text/toon-extended', () => {
+    expect(acceptsToon('text/toon-extended')).toBe(false)
   })
 })
 
@@ -133,8 +138,12 @@ describe('constants', () => {
     expect(TOON_CONTENT_TYPE).toBe('text/toon')
   })
 
-  it('TOON_CHARSET includes charset=utf-8', () => {
-    expect(TOON_CHARSET).toBe('text/toon; charset=utf-8')
+  it('TOON_CONTENT_TYPE_HEADER is the full Content-Type with charset', () => {
+    expect(TOON_CONTENT_TYPE_HEADER).toBe('text/toon; charset=utf-8')
+  })
+
+  it('TOON_CHARSET is a deprecated alias for TOON_CONTENT_TYPE_HEADER', () => {
+    expect(TOON_CHARSET).toBe(TOON_CONTENT_TYPE_HEADER)
   })
 
   it('TOON_ACCEPT_HEADER prefers toon over json', () => {

@@ -14,7 +14,7 @@ export function acceptsToon(acceptHeader: string | null | undefined): boolean {
   const types = acceptHeader.split(',').map((t) => t.trim())
   for (const type of types) {
     const [mediaType, ...params] = type.split(';').map((s) => s.trim())
-    if (!mediaType.includes(TOON_CONTENT_TYPE)) continue
+    if (mediaType !== TOON_CONTENT_TYPE) continue
 
     const qParam = params.find((p) => p.startsWith('q='))
     const q = qParam ? parseFloat(qParam.slice(2)) : 1

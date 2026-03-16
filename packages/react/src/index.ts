@@ -55,6 +55,30 @@ export interface UseToonQueryEffectOptions<T> extends Omit<
 }
 
 // ---------------------------------------------------------------------------
+// Internal helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves the fetcher function based on ToonProvider context.
+ * When context provides a baseUrl or headers, creates a configured
+ * instance; otherwise returns the default fetcher.
+ */
+function resolveFetcher<F>(
+  ctx: ToonContextValue,
+  defaultFetcher: F,
+  createConfigured: (config: ToonContextValue) => F,
+): F {
+  if (ctx.baseUrl || ctx.headers) {
+    return createConfigured({
+      baseUrl: ctx.baseUrl,
+      headers: ctx.headers,
+      fallback: ctx.fallback,
+    })
+  }
+  return defaultFetcher
+}
+
+// ---------------------------------------------------------------------------
 // Promise-based hook (unchanged API)
 // ---------------------------------------------------------------------------
 
@@ -63,15 +87,7 @@ export function useToonQuery<T = unknown>(
 ): UseQueryResult<T, Error> {
   const { url, init, ...queryOptions } = options
   const ctx = useToonContext()
-
-  const fetcher =
-    ctx.baseUrl || ctx.headers
-      ? createToonFetch({
-          baseUrl: ctx.baseUrl,
-          headers: ctx.headers,
-          fallback: ctx.fallback,
-        })
-      : toonFetch
+  const fetcher = resolveFetcher(ctx, toonFetch, createToonFetch)
 
   return useQuery<T, Error>({
     ...queryOptions,
@@ -88,15 +104,7 @@ export function useToonQueryEffect<T = unknown>(
 ): UseQueryResult<T, ToonFetchError | ToonDecodeError> {
   const { url, init, ...queryOptions } = options
   const ctx = useToonContext()
-
-  const fetcher =
-    ctx.baseUrl || ctx.headers
-      ? createToonFetchEffect({
-          baseUrl: ctx.baseUrl,
-          headers: ctx.headers,
-          fallback: ctx.fallback,
-        })
-      : toonFetchEffect
+  const fetcher = resolveFetcher(ctx, toonFetchEffect, createToonFetchEffect)
 
   return useQuery<T, ToonFetchError | ToonDecodeError>({
     ...queryOptions,

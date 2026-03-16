@@ -40,10 +40,13 @@ export interface ToonFetchConfig {
 
 /**
  * Checks whether a Response has a TOON Content-Type.
+ * Extracts the media type before parameters (e.g. charset)
+ * and compares exactly, matching the approach in `acceptsToon`.
  */
 export function isToonResponse(response: Response): boolean {
   const ct = response.headers.get('Content-Type') ?? ''
-  return ct.includes(TOON_CONTENT_TYPE)
+  const mediaType = ct.split(';')[0].trim()
+  return mediaType === TOON_CONTENT_TYPE
 }
 
 /**
@@ -61,6 +64,13 @@ export async function decodeToonResponse<T = unknown>(response: Response): Promi
 /**
  * Effect-native fetch that sets Accept: text/toon and auto-decodes.
  * Returns typed errors: ToonFetchError | ToonDecodeError.
+ *
+ * Content negotiation logic:
+ * - `text/toon` response → TOON-decoded
+ * - `application/json` response → JSON-parsed
+ * - Other content types → depends on `fallback` option:
+ *   - `'json'` (default) — optimistically attempts JSON parsing
+ *   - `'throw'` — fails with `ToonFetchError { reason: 'UnexpectedContentType' }`
  */
 export const toonFetchEffect = <T = unknown>(
   url: string,
@@ -88,19 +98,18 @@ export const toonFetchEffect = <T = unknown>(
     }
 
     const ct = response.headers.get('Content-Type') ?? ''
-    if (ct.includes('application/json')) {
-      return yield* Effect.tryPromise({
-        try: () => response.json() as Promise<T>,
-        catch: (cause) => new ToonFetchError({ reason: 'Network', cause }),
-      })
-    }
 
-    if (fallback === 'throw') {
+    // When fallback is 'throw' and the response is neither TOON nor JSON,
+    // fail with a typed error so callers can distinguish unexpected content.
+    if (fallback === 'throw' && !ct.includes('application/json')) {
       return yield* Effect.fail(
         new ToonFetchError({ reason: 'UnexpectedContentType', contentType: ct }),
       )
     }
 
+    // JSON response or default fallback: attempt JSON parsing.
+    // In fallback mode, non-JSON content types are optimistically parsed
+    // as JSON — this will throw if the body isn't valid JSON.
     return yield* Effect.tryPromise({
       try: () => response.json() as Promise<T>,
       catch: (cause) => new ToonFetchError({ reason: 'Network', cause }),
