@@ -1,6 +1,6 @@
 {
   "name": "@toon-tools/elysia",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Elysia plugin for TOON content negotiation",
   "keywords": [
     "content-negotiation",

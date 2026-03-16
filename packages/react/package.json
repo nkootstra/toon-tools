@@ -1,6 +1,6 @@
 {
   "name": "@toon-tools/react",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "React hooks for TOON data fetching with TanStack Query",
   "keywords": [
     "content-negotiation",
