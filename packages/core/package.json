@@ -1,6 +1,6 @@
 {
   "name": "@toon-tools/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared utilities for TOON content negotiation",
   "keywords": [
     "content-negotiation",

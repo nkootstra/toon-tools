@@ -1,6 +1,6 @@
 {
   "name": "@toon-tools/fetch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Framework-agnostic TOON fetch wrapper for TanStack Query, SWR, and standalone use",
   "keywords": [
     "content-negotiation",
