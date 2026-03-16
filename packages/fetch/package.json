@@ -42,10 +42,10 @@
   },
   "dependencies": {
     "@toon-tools/core": "workspace:^",
-    "effect": "^3.19.19"
+    "effect": "4.0.0-beta.33"
   },
   "devDependencies": {
-    "@effect/vitest": "^0.27.0",
+    "@effect/vitest": "4.0.0-beta.33",
     "tsup": "^8.5.1",
     "vitest": "^4.1.0"
   }
