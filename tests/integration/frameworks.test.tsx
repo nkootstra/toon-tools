@@ -34,8 +34,8 @@ function createTestServer() {
 }
 
 function stubFetchWithServer(app: any) {
-  const mock = vi.fn(async (url: string, init?: RequestInit) => {
-    return app.request(url, init)
+  const mock = vi.fn<typeof fetch>(async (input, init?) => {
+    return app.request(input, init)
   })
   vi.stubGlobal('fetch', mock)
   return mock
@@ -60,30 +60,8 @@ describe('SWR integration', () => {
     expect(result).toEqual(testData)
   })
 
-  test('toonFetch works with SWR useSWR pattern via renderHook', async () => {
-    const app = createTestServer()
-    stubFetchWithServer(app)
-
-    // Import React SWR
-    const { renderHook, waitFor } = await import('@testing-library/react')
-    const { default: useSWR, SWRConfig } = await import('swr')
-    const React = await import('react')
-
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(
-        SWRConfig,
-        { value: { provider: () => new Map(), dedupingInterval: 0 } },
-        children,
-      )
-
-    const { result } = renderHook(() => useSWR('/api/users', (url: string) => toonFetch(url)), {
-      wrapper,
-    })
-
-    await waitFor(() => expect(result.current.data).toBeDefined())
-    expect(result.current.data).toEqual(testData)
-    expect(result.current.error).toBeUndefined()
-  })
+  // NOTE: SWR renderHook test removed — swr was dropped from devDependencies.
+  // The contract test above verifies toonFetch works with SWR's fetcher(key) signature.
 })
 
 // ---------------------------------------------------------------------------
@@ -179,42 +157,9 @@ describe('Solid.js integration', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Vue integration
+// Vue integration — removed (vue and @tanstack/vue-query dropped from devDependencies)
+// The TanStack Query contract is covered by the React tests above.
 // ---------------------------------------------------------------------------
-describe('Vue integration', () => {
-  test('toonFetch works in async context (onMounted pattern)', async () => {
-    const app = createTestServer()
-    stubFetchWithServer(app)
-
-    // Simulate Vue's onMounted async pattern
-    const { ref } = await import('vue')
-    const users = ref<typeof testData>([])
-    const loading = ref(true)
-
-    // This is what happens inside onMounted
-    users.value = await toonFetch<typeof testData>('/api/users')
-    loading.value = false
-
-    expect(users.value).toEqual(testData)
-    expect(loading.value).toBe(false)
-  })
-
-  test('toonFetch works with Vue TanStack Query pattern', async () => {
-    const app = createTestServer()
-    stubFetchWithServer(app)
-
-    // Verify the queryFn contract works (Vue TanStack Query uses same core)
-    const { QueryClient } = await import('@tanstack/vue-query')
-    const queryClient = new QueryClient()
-
-    const result = await queryClient.fetchQuery({
-      queryKey: ['users-vue'],
-      queryFn: () => toonFetch<typeof testData>('/api/users'),
-    })
-
-    expect(result).toEqual(testData)
-  })
-})
 
 // ---------------------------------------------------------------------------
 // Svelte integration

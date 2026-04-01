@@ -28,7 +28,7 @@ function createWrapper(providerProps?: {
 }
 
 function stubFetch(body: string, contentType: string) {
-  const mock = vi.fn().mockResolvedValue(
+  const mock = vi.fn<typeof fetch>().mockResolvedValue(
     new Response(body, {
       headers: { 'Content-Type': contentType },
     }),

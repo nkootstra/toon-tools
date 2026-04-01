@@ -24,7 +24,7 @@ function mockResponse(body: string, contentType: string) {
 }
 
 function stubFetch(body: string, contentType: string) {
-  const mock = vi.fn().mockResolvedValue(mockResponse(body, contentType))
+  const mock = vi.fn<typeof fetch>().mockResolvedValue(mockResponse(body, contentType))
   vi.stubGlobal('fetch', mock)
   return mock
 }
